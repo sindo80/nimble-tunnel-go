@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, Package, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -14,10 +14,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useAdmin } from '@/hooks/useAdmin';
 
 export function Header() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const { totalItems } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -108,6 +110,15 @@ export function Header() {
                   <DropdownMenuItem onClick={() => navigate('/orders')}>
                     سفارشات من
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Settings className="h-4 w-4 ml-2" />
+                        پنل مدیریت
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     خروج
@@ -168,6 +179,16 @@ export function Header() {
                     >
                       محصولات فیزیکی
                     </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="p-2 hover:bg-accent rounded-md transition-colors flex items-center gap-2 text-primary font-medium"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Settings className="h-4 w-4" />
+                        پنل مدیریت
+                      </Link>
+                    )}
                   </nav>
                 </div>
               </SheetContent>
