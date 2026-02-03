@@ -24,33 +24,37 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border-border/50 bg-card">
       <Link to={`/products/${product.slug}`}>
         <div className="relative aspect-square overflow-hidden bg-muted">
           {product.image_url ? (
             <img
               src={product.image_url}
               alt={product.name}
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+              className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
             />
           ) : (
-            <div className="flex items-center justify-center h-full">
-              <Package className="h-16 w-16 text-muted-foreground" />
+            <div className="flex items-center justify-center h-full bg-gradient-to-br from-muted to-muted/50">
+              <Package className="h-16 w-16 text-muted-foreground/50" />
             </div>
           )}
           
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+          
           {/* Badges */}
-          <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <div className="absolute top-3 right-3 flex flex-col gap-2">
             {hasDiscount && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge className="bg-destructive text-destructive-foreground shadow-lg text-xs font-bold">
                 {discountPercent}% تخفیف
               </Badge>
             )}
             <Badge
-              variant="secondary"
               className={cn(
-                "text-xs",
-                product.product_type === 'digital' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                "shadow-lg text-xs font-medium",
+                product.product_type === 'digital' 
+                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                  : 'bg-emerald-500 text-white hover:bg-emerald-600'
               )}
             >
               {product.product_type === 'digital' ? (
@@ -62,9 +66,9 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Quick Actions */}
-          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="secondary" size="icon" className="h-8 w-8">
-              <Heart className="h-4 w-4" />
+          <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-full shadow-lg bg-white/90 hover:bg-white">
+              <Heart className="h-4 w-4 text-foreground" />
             </Button>
           </div>
         </div>
@@ -72,12 +76,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
       <CardContent className="p-4">
         <Link to={`/products/${product.slug}`}>
-          <h3 className="font-semibold text-base line-clamp-2 hover:text-primary transition-colors">
+          <h3 className="font-bold text-base line-clamp-2 hover:text-primary transition-colors leading-relaxed">
             {product.name}
           </h3>
         </Link>
         {product.short_description && (
-          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+          <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
             {product.short_description}
           </p>
         )}
@@ -102,6 +106,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <Button
           size="sm"
+          className="rounded-xl shadow-sm"
           onClick={(e) => {
             e.preventDefault();
             addToCart(product.id);
