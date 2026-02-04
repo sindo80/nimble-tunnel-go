@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Package, MapPin, Phone, Mail, Edit2, Save, X } from 'lucide-react';
+import { User, Package, MapPin, Phone, Mail, Edit2, Save, X, Download, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Order } from '@/types/database';
+import { Order, OrderItem } from '@/types/database';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
@@ -20,7 +20,9 @@ export default function ProfilePage() {
   const { user, profile, loading, updateProfile, signOut } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [orderItems, setOrderItems] = useState<Record<string, OrderItem[]>>({});
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
@@ -60,12 +62,51 @@ export default function ProfilePage() {
       
       if (!error && data) {
         setOrders(data as Order[]);
+        
+        // Fetch order items for all orders
+        const orderIds = data.map(o => o.id);
+        if (orderIds.length > 0) {
+          const { data: items } = await supabase
+            .from('order_items')
+            .select('*')
+            .in('order_id', orderIds);
+          
+          if (items) {
+            const groupedItems: Record<string, OrderItem[]> = {};
+            items.forEach((item: OrderItem) => {
+              if (!groupedItems[item.order_id]) {
+                groupedItems[item.order_id] = [];
+              }
+              groupedItems[item.order_id].push(item);
+            });
+            setOrderItems(groupedItems);
+          }
+        }
       }
       setOrdersLoading(false);
     };
 
     fetchOrders();
   }, [user]);
+
+  const handleDownload = async (fileUrl: string, fileName: string) => {
+    try {
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('دانلود شروع شد');
+    } catch (error) {
+      toast.error('خطا در دانلود فایل');
+    }
+  };
+
+  const canDownload = (orderStatus: string) => {
+    return ['paid', 'processing', 'shipped', 'delivered'].includes(orderStatus);
+  };
 
   const handleSave = async () => {
     const { error } = await updateProfile(formData);
@@ -246,19 +287,83 @@ export default function ProfilePage() {
                   <div className="space-y-4">
                     {orders.map((order) => {
                       const status = getStatusLabel(order.status);
+                      const items = orderItems[order.id] || [];
+                      const digitalItems = items.filter(item => item.product_type === 'digital' && item.file_url);
+                      const isExpanded = expandedOrder === order.id;
+                      
                       return (
                         <div
                           key={order.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="border rounded-lg overflow-hidden"
                         >
-                          <div>
-                            <p className="font-medium">{order.order_number}</p>
-                            <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
+                          <div 
+                            className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                            onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="font-medium">{order.order_number}</p>
+                                <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
+                              </div>
+                              {digitalItems.length > 0 && canDownload(order.status) && (
+                                <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full flex items-center gap-1">
+                                  <FileDown className="h-3 w-3" />
+                                  {digitalItems.length} فایل قابل دانلود
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-left">
+                              <p className="font-bold">{formatPrice(order.final_amount)} تومان</p>
+                              <p className={`text-sm ${status.color}`}>{status.text}</p>
+                            </div>
                           </div>
-                          <div className="text-left">
-                            <p className="font-bold">{formatPrice(order.final_amount)} تومان</p>
-                            <p className={`text-sm ${status.color}`}>{status.text}</p>
-                          </div>
+                          
+                          {/* Order Items - Expandable */}
+                          {isExpanded && items.length > 0 && (
+                            <div className="border-t bg-muted/30 p-4 space-y-3">
+                              <p className="text-sm font-medium text-muted-foreground">آیتم‌های سفارش:</p>
+                              {items.map((item) => (
+                                <div 
+                                  key={item.id}
+                                  className="flex items-center justify-between p-3 bg-background rounded-lg"
+                                >
+                                  <div className="flex-1">
+                                    <p className="font-medium">{item.product_name}</p>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <span>{item.quantity} عدد</span>
+                                      <span>•</span>
+                                      <span>{formatPrice(item.unit_price)} تومان</span>
+                                      {item.product_type === 'digital' && (
+                                        <>
+                                          <span>•</span>
+                                          <span className="text-primary">دیجیتال</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {item.product_type === 'digital' && item.file_url && canDownload(order.status) && (
+                                    <Button
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownload(item.file_url!, `${item.product_name}.zip`);
+                                      }}
+                                    >
+                                      <Download className="h-4 w-4 ml-1" />
+                                      دانلود
+                                    </Button>
+                                  )}
+                                  
+                                  {item.product_type === 'digital' && !canDownload(order.status) && (
+                                    <span className="text-sm text-muted-foreground">
+                                      پس از پرداخت قابل دانلود است
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
