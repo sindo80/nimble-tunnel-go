@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Upload, File, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, Category, ProductType } from "@/types/database";
 import { useToast } from "@/hooks/use-toast";
@@ -85,6 +85,9 @@ export default function AdminProducts() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const fetchProducts = async () => {
@@ -128,9 +131,77 @@ export default function AdminProducts() {
     }));
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ 
+        title: "خطا", 
+        description: "حداکثر حجم فایل ۵۰ مگابایت است", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    setUploadedFile(file);
+    setFormData(prev => ({ ...prev, file_name: file.name }));
+  };
+
+  const uploadFile = async (): Promise<string | null> => {
+    if (!uploadedFile) return formData.file_url || null;
+
+    setUploading(true);
+    try {
+      const fileExt = uploadedFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-files')
+        .upload(filePath, uploadedFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-files')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      toast({ 
+        title: "خطا در آپلود فایل", 
+        description: error.message, 
+        variant: "destructive" 
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+    setFormData(prev => ({ ...prev, file_url: '', file_name: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
+    // Upload file if there's a new file selected
+    let fileUrl = formData.file_url || null;
+    if (formData.product_type === 'digital' && uploadedFile) {
+      fileUrl = await uploadFile();
+      if (!fileUrl && uploadedFile) {
+        setSaving(false);
+        return; // Upload failed
+      }
+    }
 
     const productData = {
       name: formData.name,
@@ -145,7 +216,7 @@ export default function AdminProducts() {
       is_active: formData.is_active,
       featured: formData.featured,
       image_url: formData.image_url || null,
-      file_url: formData.file_url || null,
+      file_url: fileUrl,
       file_name: formData.file_name || null,
     };
 
@@ -173,12 +244,16 @@ export default function AdminProducts() {
       setDialogOpen(false);
       setFormData(initialFormData);
       setSelectedProduct(null);
+      setUploadedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       fetchProducts();
     }
   };
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
+    setUploadedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setFormData({
       name: product.name,
       slug: product.slug,
@@ -369,26 +444,74 @@ export default function AdminProducts() {
                 </div>
 
                 {formData.product_type === "digital" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="file_url">لینک فایل</Label>
-                      <Input
-                        id="file_url"
-                        value={formData.file_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, file_url: e.target.value }))}
-                        dir="ltr"
-                        placeholder="https://..."
-                      />
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <File className="h-5 w-5 text-primary" />
+                      <Label className="font-semibold">فایل محصول دیجیتال</Label>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="file_name">نام فایل</Label>
-                      <Input
-                        id="file_name"
-                        value={formData.file_name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, file_name: e.target.value }))}
-                        placeholder="course.zip"
+                    
+                    {/* File Upload Section */}
+                    <div className="space-y-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        accept=".apk,.pdf,.zip,.rar,.epub,.mp3,.mp4,.exe,.dmg,.tar,.gz"
                       />
+                      
+                      {uploadedFile || formData.file_name ? (
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                          <div className="flex items-center gap-3">
+                            <File className="h-8 w-8 text-primary" />
+                            <div>
+                              <p className="font-medium">{uploadedFile?.name || formData.file_name}</p>
+                              {uploadedFile && (
+                                <p className="text-sm text-muted-foreground">
+                                  {(uploadedFile.size / (1024 * 1024)).toFixed(2)} مگابایت
+                                </p>
+                              )}
+                              {!uploadedFile && formData.file_url && (
+                                <p className="text-sm text-green-600">آپلود شده</p>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={removeUploadedFile}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-24 border-dashed"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <Upload className="h-8 w-8 text-muted-foreground" />
+                            <span className="text-muted-foreground">
+                              کلیک کنید یا فایل را بکشید (حداکثر ۵۰ مگابایت)
+                            </span>
+                          </div>
+                        </Button>
+                      )}
+                      
+                      {uploading && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          در حال آپلود فایل...
+                        </div>
+                      )}
                     </div>
+                    
+                    <p className="text-xs text-muted-foreground">
+                      فرمت‌های مجاز: APK, PDF, ZIP, RAR, EPUB, MP3, MP4, EXE, DMG
+                    </p>
                   </div>
                 )}
 
@@ -415,9 +538,9 @@ export default function AdminProducts() {
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     انصراف
                   </Button>
-                  <Button type="submit" disabled={saving}>
-                    {saving && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}
-                    {selectedProduct ? "ذخیره تغییرات" : "افزودن محصول"}
+                  <Button type="submit" disabled={saving || uploading}>
+                    {(saving || uploading) && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}
+                    {uploading ? "در حال آپلود..." : selectedProduct ? "ذخیره تغییرات" : "افزودن محصول"}
                   </Button>
                 </div>
               </form>
