@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart, Package, Settings } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, TrendingUp, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useAdmin } from '@/hooks/useAdmin';
+import forexLogo from '@/assets/forex-logo.jpg';
 
 export function Header() {
   const navigate = useNavigate();
@@ -37,13 +38,13 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <Package className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">فروشگاه</span>
+          <Link to="/" className="flex items-center gap-3">
+            <img src={forexLogo} alt="فارکس سیگنال" className="h-10 w-10 rounded-full border-2 border-primary/30" />
+            <span className="text-xl font-bold">فارکس سیگنال</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -55,10 +56,10 @@ export function Header() {
               محصولات
             </Link>
             <Link to="/products?type=digital" className="text-sm font-medium hover:text-primary transition-colors">
-              فایل‌های دیجیتال
+              سیگنال‌ها
             </Link>
             <Link to="/products?type=physical" className="text-sm font-medium hover:text-primary transition-colors">
-              محصولات فیزیکی
+              آموزش‌ها
             </Link>
           </nav>
 
@@ -68,10 +69,10 @@ export function Header() {
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="جستجوی محصولات..."
+                placeholder="جستجوی سیگنال‌ها و آموزش‌ها..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
+                className="pr-10 bg-muted/50 border-border/50"
               />
             </div>
           </form>
@@ -126,7 +127,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
+              <Button variant="outline" size="sm" onClick={() => navigate('/auth')} className="border-primary/30 hover:bg-primary/10">
                 ورود / ثبت نام
               </Button>
             )}
@@ -140,6 +141,10 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="right" className="w-72">
                 <div className="flex flex-col gap-4 mt-8">
+                  <div className="flex items-center gap-3 pb-4 border-b border-border/50">
+                    <img src={forexLogo} alt="فارکس سیگنال" className="h-12 w-12 rounded-full border-2 border-primary/30" />
+                    <span className="font-bold">فارکس سیگنال</span>
+                  </div>
                   <form onSubmit={handleSearch} className="relative">
                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -170,14 +175,14 @@ export function Header() {
                       className="p-2 hover:bg-accent rounded-md transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      فایل‌های دیجیتال
+                      سیگنال‌ها
                     </Link>
                     <Link
                       to="/products?type=physical"
                       className="p-2 hover:bg-accent rounded-md transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      محصولات فیزیکی
+                      آموزش‌ها
                     </Link>
                     {isAdmin && (
                       <Link
