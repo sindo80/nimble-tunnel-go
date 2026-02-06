@@ -1,28 +1,27 @@
 import { Link } from 'react-router-dom';
-import { Package, Instagram, Twitter, MessageCircle, Shield, Truck } from 'lucide-react';
+import { TrendingUp, Instagram, Send, MessageCircle, Shield, Zap } from 'lucide-react';
+import forexLogo from '@/assets/forex-logo.jpg';
 
 export function Footer() {
   return (
-    <footer className="bg-muted/50 border-t mt-auto">
+    <footer className="bg-muted/30 border-t border-border/50 mt-auto">
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* About */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-500 rounded-xl flex items-center justify-center">
-                <Package className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">فروشگاه</span>
+              <img src={forexLogo} alt="فارکس سیگنال" className="w-12 h-12 rounded-full border-2 border-primary/30" />
+              <span className="text-xl font-bold">فارکس سیگنال</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-              فروشگاه آنلاین محصولات دیجیتال و فیزیکی با کیفیت بالا و قیمت مناسب. خرید امن و تحویل سریع.
+              ارائه دهنده سیگنال‌های معاملاتی حرفه‌ای فارکس و ارز دیجیتال. آموزش، تحلیل و ابزارهای معاملاتی برای موفقیت در بازارهای مالی.
             </p>
             <div className="flex gap-3">
               <a href="#" className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white transition-all">
                 <Instagram className="h-5 w-5" />
               </a>
               <a href="#" className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white transition-all">
-                <Twitter className="h-5 w-5" />
+                <Send className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -40,13 +39,13 @@ export function Footer() {
               <li>
                 <Link to="/products?type=digital" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-primary/50 rounded-full" />
-                  محصولات دیجیتال
+                  سیگنال‌های معاملاتی
                 </Link>
               </li>
               <li>
                 <Link to="/products?type=physical" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-primary/50 rounded-full" />
-                  محصولات فیزیکی
+                  آموزش‌ها و دوره‌ها
                 </Link>
               </li>
             </ul>
@@ -79,23 +78,23 @@ export function Footer() {
 
           {/* Features */}
           <div>
-            <h3 className="font-bold mb-5">امکانات</h3>
+            <h3 className="font-bold mb-5">مزایای ما</h3>
             <ul className="space-y-4">
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-emerald-500" />
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-primary" />
                 </div>
-                <span>خرید امن و مطمئن</span>
+                <span>سیگنال‌های با دقت +۸۵٪</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="w-8 h-8 bg-destructive/10 rounded-lg flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-destructive" />
+                </div>
+                <span>ارسال آنی سیگنال‌ها</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-muted-foreground">
                 <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                  <Truck className="h-4 w-4 text-blue-500" />
-                </div>
-                <span>ارسال سریع به سراسر ایران</span>
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                  <MessageCircle className="h-4 w-4 text-purple-500" />
+                  <MessageCircle className="h-4 w-4 text-blue-500" />
                 </div>
                 <span>پشتیبانی ۲۴ ساعته</span>
               </li>
@@ -103,8 +102,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-12 pt-8 text-center">
-          <p className="text-sm text-muted-foreground">© ۱۴۰۴ فروشگاه. تمامی حقوق محفوظ است.</p>
+        <div className="border-t border-border/50 mt-12 pt-8 text-center">
+          <p className="text-sm text-muted-foreground">© ۱۴۰۴ فارکس سیگنال. تمامی حقوق محفوظ است.</p>
+          <p className="text-xs text-muted-foreground mt-2">هشدار: معامله در بازارهای مالی دارای ریسک است. سرمایه‌گذاری با مسئولیت شما انجام می‌شود.</p>
         </div>
       </div>
     </footer>
