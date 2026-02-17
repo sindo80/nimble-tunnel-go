@@ -61,6 +61,9 @@ export function Header() {
             <Link to="/products?type=physical" className="text-sm font-medium hover:text-primary transition-colors">
               آموزش‌ها
             </Link>
+            <Link to="/tutorials" className="text-sm font-medium hover:text-primary transition-colors">
+              ویدیوها
+            </Link>
           </nav>
 
           {/* Search Bar */}
@@ -183,6 +186,13 @@ export function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       آموزش‌ها
+                    </Link>
+                    <Link
+                      to="/tutorials"
+                      className="p-2 hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      ویدیوها
                     </Link>
                     {isAdmin && (
                       <Link

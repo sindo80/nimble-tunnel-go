@@ -1,4 +1,4 @@
-import { Package, FolderOpen, ShoppingCart, MessageCircle, LayoutDashboard, ArrowRight } from "lucide-react";
+import { Package, FolderOpen, ShoppingCart, MessageCircle, LayoutDashboard, ArrowRight, Video } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -19,6 +19,7 @@ const menuItems = [
   { title: "دسته‌بندی‌ها", url: "/admin/categories", icon: FolderOpen },
   { title: "سفارشات", url: "/admin/orders", icon: ShoppingCart },
   { title: "تیکت‌ها", url: "/admin/tickets", icon: MessageCircle },
+  { title: "ویدیوها", url: "/admin/tutorials", icon: Video },
 ];
 
 export function AdminSidebar() {
