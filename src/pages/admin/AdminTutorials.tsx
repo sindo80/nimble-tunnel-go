@@ -78,8 +78,8 @@ export default function AdminTutorials() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 100 * 1024 * 1024) {
-      toast({ title: "خطا", description: "حداکثر حجم فایل ۱۰۰ مگابایت است", variant: "destructive" });
+    if (file.size > 1000 * 1024 * 1024) {
+      toast({ title: "خطا", description: "حداکثر حجم فایل ۱ گیگابایت است", variant: "destructive" });
       return;
     }
     setUploading(true);
@@ -213,7 +213,7 @@ export default function AdminTutorials() {
                     </div>
                   ) : (
                     <Button type="button" variant="outline" className="w-full h-16 border-dashed" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-                      {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Upload className="h-5 w-5 ml-2" />انتخاب ویدیو (حداکثر ۱۰۰MB)</>}
+                      {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Upload className="h-5 w-5 ml-2" />انتخاب ویدیو (حداکثر ۱GB)</>}
                     </Button>
                   )}
                 </div>
